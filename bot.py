@@ -26,18 +26,25 @@ async def set_api(client, message):
 
 @bot.on_message(filters.regex(r'https?://[^\s]+') & filters.private)
 async def link_handler(bot, message):
-    link = message.matches[0].group(0)
-    try:
-        if link.startswith("https://drive.google.com") or link.startswith("http://drive.google.com") or link.startswith("drive.google.com"):
-            fp = await get_filepress(link)
-            if fp[0] != "":
-                short_link = await get_shortlink(fp[0])
-                await message.reply(f"📂 <code>{fp[1]}</code>\n\n<b>FilePress: </b><code>{fp[0]}</code>\n\n<b>GyaniLinks: </b><code>{short_link}</code>")
-        else:
-            short_link = await get_shortlink(link)
-            await message.reply(f"Generated Shortened GyaniLinks:\n\n<code>{short_link}</code>")
-    except Exception as e:
-        await message.reply(f'Error: {e}', quote=True)
+    urls = message.text.split()
+    short_links = []
+    for url in urls:
+        try:
+            if url.startswith("https://drive.google.com") or url.startswith("http://drive.google.com") or url.startswith("drive.google.com"):
+                fp = await get_filepress(url)
+                if fp[0] != "":
+                    short_link = await get_shortlink(fp[0])
+                    short_links.append(short_link)
+            else:
+                short_link = await get_shortlink(url)
+                short_links.append(short_link)
+        except Exception as e:
+            await message.reply(f'Error: {e}', quote=True)
+
+    if len(short_links) > 0:
+        text = f"Generated Shortened GyaniLinks:\n\n"
+        text += "\n".join(short_links)
+        await message.reply(text)
 
 async def get_shortlink(link):
     url = 'https://gyanilinks.com/api'
