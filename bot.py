@@ -2,6 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from plugins.helper import START_TXT
 import aiohttp
+import requests
 from plugins.filepress import get_filepress
 
 api_id = 13115322
@@ -23,6 +24,11 @@ async def set_api(client, message):
         await message.reply_text(f"You have set your api successfully as\n\n<code>{api}</code>")
     except IndexError:
         await message.reply_text(f"Sorry, I couldn't process your request")
+
+def convert_link(link):
+    """Converts a Google Drive link with the `export=download` parameter to a link without the parameter."""
+    url = link.split("&export=download")[0]
+    return f"https://drive.google.com/file/d/{url}"
 
 @bot.on_message(filters.regex(r'https?://[^\s]+') & filters.private)
 async def link_handler(bot, message):
