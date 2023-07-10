@@ -25,12 +25,12 @@ async def set_api(client, message):
     except IndexError:
         await message.reply_text(f"Sorry, I couldn't process your request")
 
-def convert_link(link):
+async def convert_link(link):
     """Converts a Google Drive link with the `export=download` parameter to a link without the parameter."""
     url = link.split("&export=download")[0]
     return f"https://drive.google.com/file/d/{url}"
 
-def get_shortlink(link):
+async def get_shortlink(link):
     """Returns a shortened link from GyaniLinks."""
     url = 'https://gyanilinks.com/api'
     params = {'api': api, 'url': link, 'format': 'text'}
@@ -40,7 +40,7 @@ def get_shortlink(link):
             short_link = await response.text()
             return short_link.strip()
 
-def link_handler(bot, message):
+async def link_handler(bot, message):
     urls = message.text.split()
     short_links = []
     for url in urls:
