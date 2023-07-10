@@ -30,8 +30,17 @@ def convert_link(link):
     url = link.split("&export=download")[0]
     return f"https://drive.google.com/file/d/{url}"
 
-@bot.on_message(filters.regex(r'https?://[^\s]+') & filters.private)
-async def link_handler(bot, message):
+def get_shortlink(link):
+    """Returns a shortened link from GyaniLinks."""
+    url = 'https://gyanilinks.com/api'
+    params = {'api': api, 'url': link, 'format': 'text'}
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params, raise_for_status=True) as response:
+            short_link = await response.text()
+            return short_link.strip()
+
+def link_handler(bot, message):
     urls = message.text.split()
     short_links = []
     for url in urls:
@@ -39,10 +48,12 @@ async def link_handler(bot, message):
             if url.startswith("https://drive.google.com") or url.startswith("http://drive.google.com") or url.startswith("drive.google.com"):
                 fp = await get_filepress(url)
                 if fp[0] != "":
-                    short_link = await get_shortlink(fp[0])
+                    new_link = convert_link(url)
+                    short_link = await get_shortlink(new_link)
                     short_links.append(short_link)
             else:
-                short_link = await get_shortlink(url)
+                new_link = convert_link(url)
+                short_link = await get_shortlink(new_link)
                 short_links.append(short_link)
         except Exception as e:
             await message.reply(f'Error: {e}', quote=True)
@@ -51,14 +62,5 @@ async def link_handler(bot, message):
         text = f"Generated Shortened GyaniLinks:\n\n"
         text += "\n".join(short_links)
         await message.reply(text)
-
-async def get_shortlink(link):
-    url = 'https://gyanilinks.com/api'
-    params = {'api': api, 'url': link, 'format': 'text'}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params, raise_for_status=True) as response:
-            short_link = await response.text()
-            return short_link.strip()
 
 bot.run()
